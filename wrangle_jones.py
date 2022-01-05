@@ -55,44 +55,42 @@ THE CONNECTION STRING.
         zillow.to_csv('zillow.csv')
         return zillow
 
-##########################################################################################| WRANGLE FUNCTIONS
+##########################################################################################| CLEAN FUNCTIONS
 def wrangle_zillow(df):
     '''
 THIS FUNCTION TAKES IN A RAW DATAFRAME AND PERFORMS THE FOLLOWING DATA CLEANING:
     1) FILTER OUT NON-SINGLE UNIT OBSERVATIONS
-    2) DROPS NULLS
-    4) CORRECTING DTYPES
-    5) CREATE AGE COLUMN
+    2) DROPS NULLS BASED ON THRESHOLDS
+    3) CREATE AGE COLUMN
+    4) DROP REMAINING ROWS WITH NULL VALUES
+    5) CORRECTING DTYPES
     6) DROP COLUMNS
+    7) REMOVE OUTLIERS
     '''
     
     
-    #filter single units by properylandusetype, bath, bed, and sqft count, and unit count
+    #1) filter single units by properylandusetype, bath, bed, and sqft count, and unit count
     df = df[df.propertylandusetypeid.isin([261, 262, 263, 264, 266, 268, 273, 276, 279])]
     df = df[(df.baths > 0) & (df.beds > 0) & (df.sqft > 300)]
     
-    #dropping null rows and columns with > 50% of values missing
+    #2) dropping null rows and columns with > 50% of values missing
     df = df.dropna(axis = 1, thresh = .5 * len(df))
     df = df.dropna(thresh = .5 * len(df.columns))
     
-#    #label fips counties
-#    df['fips'] = df.fips.astype(int)
-#    df['fips_loc'] = df.fips.replace({6037:'Los Angeles, CA', 6059:'Orange, CA', 6111:'Ventura, CA'})
-    
-    #create age column from yearbuilt
+    #3) create age column from yearbuilt
     df['age'] = 2022 - df.yearbuilt
     
-    #drop any remaining rows with null values
+    #4) drop any remaining rows with null values
     df.dropna(inplace = True)
     
-    #correcting dtypes
+    #5) correcting dtypes
     df[['beds', 'sqft', 'fullbaths', 'latitude', 'longitude', 'yearbuilt', 'unitcnt']] = df[['beds', 'sqft',\
                                                                                                     'fullbaths', 'latitude', 'longitude', 'yearbuilt', 'unitcnt']].astype('int')
     
-    #drop columns 
+    #6) drop columns 
     df = df.drop(columns = ['propertylandusetypeid', 'transactiondate', 'yearbuilt', 'unitcnt'])
     
-    #remove outliers
+    #7) remove outliers
     for col in df[['baths', 'beds', 'sqft', 'fullbaths', 'tax_value', 'logerror']]:
         
         if df[col].dtype != 'O':
@@ -114,8 +112,6 @@ THIS FUNCTION TAKES IN A RAW DATAFRAME AND PERFORMS THE FOLLOWING DATA CLEANING:
     
 
 ##########################################################################################| PREPARE FUNCTION
-#SPLIT
-#SCALE
 def split_data(df):
     '''
 THIS FUNCTION TAKES IN A CLEAN DF AND SPLITS IT, RETURNING TRAIN, VALIDATE, AND TEST DFs
@@ -128,7 +124,9 @@ THIS FUNCTION TAKES IN A CLEAN DF AND SPLITS IT, RETURNING TRAIN, VALIDATE, AND 
 
 def scale_data(train, validate, test):
     '''
-    
+THIS FUNCTION TAKES IN A TRAIN, VALIDATE, AND TEST DF AND RETURNS THEM ALL WITH SCALED COLUMNS FOR ALL
+BUT LAT AND LONG VARIABLES. READY FOR EXPLORATION AND MODELING, BOTH UNSCALED AND SCALED DATA ARE IN 
+THE DF.
     '''
     
     cols_to_scale = ['baths', 'beds', 'sqft', 'fullbaths', 'tax_value', 'logerror', 'age']
