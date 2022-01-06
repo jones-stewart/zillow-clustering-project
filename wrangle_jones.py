@@ -122,27 +122,35 @@ THIS FUNCTION TAKES IN A CLEAN DF AND SPLITS IT, RETURNING TRAIN, VALIDATE, AND 
     
     return train, validate, test
 
-def scale_data(train, validate, test):
+def scale_data(train, validate, test, df):
     '''
-THIS FUNCTION TAKES IN A TRAIN, VALIDATE, AND TEST DF AND RETURNS THEM ALL WITH SCALED COLUMNS FOR ALL
-BUT LAT AND LONG VARIABLES. READY FOR EXPLORATION AND MODELING, BOTH UNSCALED AND SCALED DATA ARE IN 
-THE DF.
+THIS FUNCTION TAKES IN A TRAIN, VALIDATE, AND TEST DF, ALONG WITH THE ORIGINAL, UNSPLIT DF AND RETURNS 
+THE FOLLOWING 6 DFS:
+    TRAIN, VALIDATE AND TEST: USING THE SPLIT_DATA() FUNCTION
+    EACH OF THE ABOVE THREE, BUT ADDED COLUMNS WHERE THE DATA IS SCALED
+THIS FUNCTION SCALED THE DATA USING THE STANDARD SCALER WHICH NORMALLY DISTRIBUTES EACH COLUMN'S VALUES
+AROUND 0
+
+IF NEEDED, WILL COME BACK LATER AND ADD CODE THAT DROPS THE ORIGINAL, UNSCALED COLUMNS FROM THE SCALED
+DFS.
     '''
-    
-    cols_to_scale = ['baths', 'beds', 'sqft', 'fullbaths', 'tax_value', 'logerror', 'age']
-    
-    scaler = StandardScaler()
-    scaler.fit(train[cols_to_scale])
-    
-    train[[f'{col}_scaled' for col in cols_to_scale]] = scaler.transform(train[cols_to_scale])
-    validate[[f'{col}_scaled' for col in cols_to_scale]] = scaler.transform(validate[cols_to_scale])
-    test[[f'{col}_scaled' for col in cols_to_scale]] = scaler.transform(test[cols_to_scale])
     
     train_scaled = train
     validate_scaled = validate
     test_scaled = test
     
-    return train_scaled, validate_scaled, test_scaled
+    cols_to_scale = ['baths', 'beds', 'sqft', 'fullbaths', 'tax_value', 'logerror', 'age']
+    
+    scaler = StandardScaler()
+    scaler.fit(train_scaled[cols_to_scale])
+    
+    train_scaled[[f'{col}_scaled' for col in cols_to_scale]] = scaler.transform(train_scaled[cols_to_scale])
+    validate_scaled[[f'{col}_scaled' for col in cols_to_scale]] = scaler.transform(validate_scaled[cols_to_scale])
+    test_scaled[[f'{col}_scaled' for col in cols_to_scale]] = scaler.transform(test_scaled[cols_to_scale])
+    
+    train, validate, test = split_data(df)
+    
+    return train, validate, test, train_scaled, validate_scaled, test_scaled
 
     
     
