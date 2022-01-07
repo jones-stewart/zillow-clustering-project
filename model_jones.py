@@ -69,9 +69,9 @@ original unencoded cluster column.
     encoded_validate = pd.concat([X_validate , dummy_validate_df], axis = 1)
     encoded_test = pd.concat([X_test , dummy_test_df], axis = 1)
     
-    X_train_encoded = encoded_train.drop(columns = ['cluster'], inplace = True)
-    X_validate_encoded = encoded_validate.drop(columns = ['cluster'], inplace = True)
-    X_test_encoded = encoded_test.drop(columns = ['cluster'], inplace = True)
+    X_train_encoded = encoded_train.drop(columns = ['cluster'])
+    X_validate_encoded = encoded_validate.drop(columns = ['cluster'])
+    X_test_encoded = encoded_test.drop(columns = ['cluster'])
     
     return X_train_encoded, X_validate_encoded, X_test_encoded
 
