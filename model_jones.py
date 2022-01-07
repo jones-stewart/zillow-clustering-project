@@ -7,6 +7,9 @@ import seaborn as sns
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
+from sklearn.metrics import mean_squared_error
+from sklearn.linear_model import LinearRegression, LassoLars, TweedieRegressor
+
 
 
 
@@ -96,6 +99,52 @@ def X_y_split(train, validate, test, model_features, target):
     
     
     return encoded_train, encoded_validate, encoded_test, X_train, y_train, X_validate, y_validate, X_test, y_test
+
+def scale_features(scaler, X_train, X_validate, X_test):
+    '''
+    
+    '''
+    scaler = StandardScaler(copy=True).fit(X_train)
+    X_scaled_train = scaler.transform(X_train)
+    X_scaled_validate = scaler.transform(X_validate)
+    X_scaled_test = scaler.transform(X_validate)
+    
+    return X_scaled_train, X_scaled_validate, X_scaled_test
+
+
+def model_features(X_scaled_train, X_scaled_validate, X_scaled_test, target, y_train, y_validate, y_test):
+    '''
+    
+    '''
+    
+    #baseline_prediction
+    median = X_scaled_train[target].median()
+    y_train['baseline_pred'] = median
+    y_validate['baseline_pred'] = median
+    
+    rmse_baseline_train = mean_squared_error(y_train[target], y_train[baseline_pred])**(1/2)
+    rmse_baseline_validate = mean_squared_error(y_train[target], y_train[baseline_pred])**(1/2)
+    
+    print(f'rmse_baseline_train: {rmse_baseline_train}')
+    print(f'rmse_baseline_validate: {rmse_baseline_validate}')
+    
+    plt.hist(y_train[target], color='blue', alpha=.5, label=f'{target.upper()}')
+    plt.hist(y_train['baseline_pred'], bins=1, color='red', alpha=.5, rwidth=100, label=f'Predicted {target.upper()}')
+    plt.xlabel(f'{target.upper()}')
+    plt.legend()
+    plt.show();
+    
+    #model01_prediction
+    
+    
+    #model02_prediction
+    
+    
+    #model03_prediction
+    
+    
+
+
     
     
     
