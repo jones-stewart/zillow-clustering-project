@@ -30,7 +30,7 @@ THE CONNECTION STRING.
     else: 
         db = 'zillow'
         query  = '''
-            SELECT bathroomcnt as baths, bedroomcnt as beds, calculatedfinishedsquarefeet as sqft, fullbathcnt as fullbaths, latitude,
+            SELECT bathroomcnt as baths, bedroomcnt as beds, calculatedfinishedsquarefeet as sq_ft, fullbathcnt as fullbaths, latitude,
                    longitude, yearbuilt, taxvaluedollarcnt as tax_value, logerror, transactiondate, 
                    unitcnt, propertylandusetypeid
             FROM properties_2017
@@ -73,24 +73,20 @@ THIS FUNCTION TAKES IN A RAW DATAFRAME AND PERFORMS THE FOLLOWING DATA CLEANING:
     df = df[df.propertylandusetypeid.isin([261, 262, 263, 264, 266, 268, 273, 276, 279])]
     df = df[(df.baths > 0) & (df.beds > 0) & (df.sq_ft > 300)]
     
-    #2) dropping null rows and columns with > 50% of values missing
-    df = df.dropna(axis = 1, thresh = .5 * len(df))
-    df = df.dropna(thresh = .5 * len(df.columns))
+    #2) dropping null rows and columns with > n% of values missing
+    df = df.dropna(axis = 1, thresh = .6 * len(df))
+    df = df.dropna(thresh = .8 * len(df.columns))
     
     #3) create age column from yearbuilt
     df['age'] = 2022 - df.yearbuilt
     
-    #4) drop any remaining rows with null values
-    df.dropna(inplace = True)
-    
+    #4) drop columns and any remaining null values
+    df = df.drop(columns = ['propertylandusetypeid', 'transactiondate', 'yearbuilt', 'unitcnt']).dropna()    
     #5) correcting dtypes
-    df[['beds', 'sq_ft', 'fullbaths', 'latitude', 'longitude', 'yearbuilt', 'unitcnt']] = df[['beds', 'sq_ft',\
-                                                                                                    'fullbaths', 'latitude', 'longitude', 'yearbuilt', 'unitcnt']].astype('int')
+    df[['beds', 'sq_ft', 'fullbaths', 'latitude', 'longitude']] = df[['beds', 'sq_ft', 'fullbaths', 'latitude', 'longitude']].astype('int')
+
     
-    #6) drop columns 
-    df = df.drop(columns = ['propertylandusetypeid', 'transactiondate', 'yearbuilt', 'unitcnt'])
-    
-    #7) remove outliers
+    #6) remove outliers
     for col in df[['baths', 'beds', 'sq_ft', 'fullbaths', 'tax_value', 'logerror']]:
         
         if df[col].dtype != 'O':
@@ -105,9 +101,7 @@ THIS FUNCTION TAKES IN A RAW DATAFRAME AND PERFORMS THE FOLLOWING DATA CLEANING:
             lower = q1 - 1.5 * iqr
 
             # remove outliers
-            df = df[(df[col]>lower)&(df[col]<upper)]
-    
-    
+        df = df[(df[col]>lower)&(df[col]<upper)]
     return df
     
 
@@ -118,6 +112,6 @@ THIS FUNCTION TAKES IN A CLEAN DF AND SPLITS IT, RETURNING TRAIN, VALIDATE, AND 
     '''
     
     train, test = train_test_split(df, train_size = 0.8, random_state = 123)
-    train, validate = train_test_split(train, train_size = 0.75, random_state = 123)
+    train, validate = train_test_split(train, train_size = 0.7, random_state = 123)
     
     return train, validate, test
