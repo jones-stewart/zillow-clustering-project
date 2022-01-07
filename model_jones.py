@@ -61,17 +61,17 @@ original unencoded cluster column.
     '''
     
     #encode cluster column
-    dummy_train_df = pd.get_dummies(X_train.cluster)
-    dummy_validate_df = pd.get_dummies(X_validate.cluster)
-    dummy_test_df = pd.get_dummies(X_test.cluster)
+    dummy_train_df = pd.get_dummies(X_train.cluster, prefix='cluster_')
+    dummy_validate_df = pd.get_dummies(X_validate.cluster, prefix='cluster_')
+    dummy_test_df = pd.get_dummies(X_test.cluster, prefix='cluster_')
     
     encoded_train = pd.concat([X_train , dummy_train_df], axis = 1)
     encoded_validate = pd.concat([X_validate , dummy_validate_df], axis = 1)
     encoded_test = pd.concat([X_test , dummy_test_df], axis = 1)
     
-    X_train_encoded = encoded_train.drop(columns = ['cluster'], inplace = True)
-    X_validate_encoded = encoded_validate.drop(columns = ['cluster'], inplace = True)
-    X_test_encoded = encoded_test.drop(columns = ['cluster'], inplace = True)
+    X_train_encoded = encoded_train.drop(columns = ['cluster'])
+    X_validate_encoded = encoded_validate.drop(columns = ['cluster'])
+    X_test_encoded = encoded_test.drop(columns = ['cluster'])
     
     return X_train_encoded, X_validate_encoded, X_test_encoded
 
