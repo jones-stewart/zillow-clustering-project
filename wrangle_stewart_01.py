@@ -1,6 +1,9 @@
 # FUNCTIONS FOR WRANGLING ZILLOW DATA
 
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+
 
 def get_url(db):
     '''
@@ -147,3 +150,38 @@ def wrangle_zillow(prop_req_col, prop_req_row):
     from datetime import date
     zillow['age'] = date.today().year - zillow.yearbuilt
     return zillow
+
+def scale_and_cluster(train, validate, test, model_vars, cluster_vars, k):
+    '''
+    This function takes in train, validate, and test dataframes, a list of variables to be
+    modeled on, a list of features to cluster by, and a k-value to determine the number of
+    clusters to create. It returns X_train, X_validate, and X_test dataframes with a 
+    cluster column, as well as scaled versions of those dataframes.
+    '''
+    # define independent variables
+    X_train = pd.concat([train[model_vars], train[cluster_vars]], axis=1)
+    X_train = X_train.loc[:,~X_train.columns.duplicated()]
+    X_validate = pd.concat([validate[model_vars], validate[cluster_vars]], axis=1)
+    X_validate = X_validate.loc[:,~X_validate.columns.duplicated()]
+    X_test = pd.concat([test[model_vars], test[cluster_vars]], axis=1)
+    X_test = X_test.loc[:,~X_test.columns.duplicated()]
+    # scale features
+    scaler = StandardScaler().fit(X_train)
+    X_scaled_train = pd.DataFrame(scaler.transform(X_train), columns = X_train.columns)
+    X_scaled_validate = pd.DataFrame(scaler.transform(X_validate), columns = X_validate.columns)
+    X_scaled_test = pd.DataFrame(scaler.transform(X_test), columns = X_test.columns)
+    # create kmeans object
+    kmeans = KMeans(n_clusters=k, random_state=123)
+    # fit object
+    kmeans.fit(X_scaled_train[cluster_vars])
+    # make predictions
+    kmeans.predict(X_scaled_train[cluster_vars])
+    # create columns for predictions
+    train['cluster'] = kmeans.predict(X_scaled_train[cluster_vars])
+    X_scaled_train['cluster'] = kmeans.predict(X_scaled_train[cluster_vars])
+    validate['cluster'] = kmeans.predict(X_scaled_validate[cluster_vars])
+    X_scaled_validate['cluster'] = kmeans.predict(X_scaled_validate[cluster_vars])
+    test['cluster'] = kmeans.predict(X_scaled_test[cluster_vars])
+    X_scaled_test['cluster'] = kmeans.predict(X_scaled_test[cluster_vars])
+    model_vars.append('cluster')
+    return train[model_vars], validate[model_vars], test[model_vars], X_scaled_train[model_vars], X_scaled_validate[model_vars], X_scaled_test[model_vars]
