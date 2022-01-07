@@ -71,7 +71,7 @@ THIS FUNCTION TAKES IN A RAW DATAFRAME AND PERFORMS THE FOLLOWING DATA CLEANING:
     
     #1) filter single units by properylandusetype, bath, bed, and sqft count, and unit count
     df = df[df.propertylandusetypeid.isin([261, 262, 263, 264, 266, 268, 273, 276, 279])]
-    df = df[(df.baths > 0) & (df.beds > 0) & (df.sq_ft > 300)]
+    df = df[(df.baths > 0) & (df.beds > 0) & (df.sqft > 300)]
     
     #2) dropping null rows and columns with > 50% of values missing
     df = df.dropna(axis = 1, thresh = .5 * len(df))
@@ -84,14 +84,14 @@ THIS FUNCTION TAKES IN A RAW DATAFRAME AND PERFORMS THE FOLLOWING DATA CLEANING:
     df.dropna(inplace = True)
     
     #5) correcting dtypes
-    df[['beds', 'sq_ft', 'fullbaths', 'latitude', 'longitude', 'yearbuilt', 'unitcnt']] = df[['beds', 'sq_ft',\
+    df[['beds', 'sqft', 'fullbaths', 'latitude', 'longitude', 'yearbuilt', 'unitcnt']] = df[['beds', 'sqft',\
                                                                                                     'fullbaths', 'latitude', 'longitude', 'yearbuilt', 'unitcnt']].astype('int')
     
     #6) drop columns 
     df = df.drop(columns = ['propertylandusetypeid', 'transactiondate', 'yearbuilt', 'unitcnt'])
     
     #7) remove outliers
-    for col in df[['baths', 'beds', 'sq_ft', 'fullbaths', 'tax_value', 'logerror']]:
+    for col in df[['baths', 'beds', 'sqft', 'fullbaths', 'tax_value', 'logerror']]:
         
         if df[col].dtype != 'O':
             # get quartiles
