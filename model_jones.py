@@ -105,36 +105,49 @@ def scale_features(scaler, X_train, X_validate, X_test):
     
     '''
     scaler = StandardScaler(copy=True).fit(X_train)
-    X_scaled_train = scaler.transform(X_train)
-    X_scaled_validate = scaler.transform(X_validate)
-    X_scaled_test = scaler.transform(X_validate)
+    X_scaled_train = pd.DataFrame(scaler.transform(X_train), columns = X_train.columns + '_scaled')
+    X_scaled_validate = pd.DataFrame(scaler.transform(X_validate), columns = X_validate.columns + '_scaled')
+    X_scaled_test = pd.DataFrame(scaler.transform(X_validate), columns = X_test.columns + '_scaled')
     
     return X_scaled_train, X_scaled_validate, X_scaled_test
 
 
-def model_features(X_scaled_train, X_scaled_validate, X_scaled_test, target, y_train, y_validate, y_test):
+def model_features(target, X_scaled_train, X_scaled_validate, X_scaled_test, y_train, y_validate, y_test):
     '''
     
     '''
     
     #baseline_prediction
-    median = X_scaled_train[target].median()
+    median = y_train[target].median()
     y_train['baseline_pred'] = median
     y_validate['baseline_pred'] = median
     
-    rmse_baseline_train = mean_squared_error(y_train[target], y_train[baseline_pred])**(1/2)
-    rmse_baseline_validate = mean_squared_error(y_train[target], y_train[baseline_pred])**(1/2)
+    rmse_baseline_train = mean_squared_error(y_train[target], y_train.baseline_pred)**(1/2)
+    rmse_baseline_validate = mean_squared_error(y_train[target], y_train.baseline_pred)**(1/2)
     
     print(f'rmse_baseline_train: {rmse_baseline_train}')
     print(f'rmse_baseline_validate: {rmse_baseline_validate}')
+    print()
     
-    plt.hist(y_train[target], color='blue', alpha=.5, label=f'{target.upper()}')
-    plt.hist(y_train['baseline_pred'], bins=1, color='red', alpha=.5, rwidth=100, label=f'Predicted {target.upper()}')
-    plt.xlabel(f'{target.upper()}')
-    plt.legend()
-    plt.show();
+#    plt.hist(y_train[target], color='blue', alpha=.5, label=f'{target.upper()}')
+#    plt.hist(y_train['baseline_pred'], bins=1, color='red', alpha=.5, rwidth=100, label=f'Predicted {target.upper()}')
+#    plt.xlabel(f'{target.upper()}')
+#    plt.legend()
+#    plt.show();
     
     #model01_prediction
+    lm = LinearRegression(normalize=True)
+    lm.fit(X_scaled_train, y_train)
+    
+    y_train['model01_pred'] = lm.predict(X_scaled_train)
+    y_validate['model01_pred'] = lm.predict(X_scaled_validate)
+    
+    rsme_model01_train = (mean_squared_error(y_train, y_train.model01_pred))**(1/2)
+    rsme_model01_validate = (mean_squared_error(y_validate, y_validate.model01_pred))**(1/2)
+    
+    print(f'rmse_model01_train: {rsme_model01_train}')
+    print(f'rmse_model01_validate: {rsme_model01_validate}')   
+    print()
     
     
     #model02_prediction
