@@ -112,7 +112,7 @@ def remove_outliers(df, cols, k):
         upper = q3 + k * iqr
         lower = q1 - k * iqr
         # remove outliers
-        df = df[(df[col]>lower)&(df[col]<upper)]
+    df = df[(df[col]>lower)&(df[col]<upper)]
     return df
 
 def split_data(df):
@@ -146,7 +146,6 @@ def wrangle_zillow(prop_req_col, prop_req_row):
     '''
     zillow = handle_missing_values(only_single_units(acquire_zillow()), prop_req_col, prop_req_row)
     zillow = zillow.drop(columns=['unitcnt', 'propertylandusetypeid']).dropna()
-    zillow = label_fips(zillow)
     from datetime import date
     zillow['age'] = date.today().year - zillow.yearbuilt
     return zillow
